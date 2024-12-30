@@ -1,61 +1,45 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:food_order_app/core/text/app_text_theme.dart';
-import 'package:food_order_app/presentation/auth/login/login_screen.dart';
-import 'package:food_order_app/presentation/auth/login/login_text.dart';
-import 'package:food_order_app/presentation/auth/register/register_screen.dart';
-import 'package:food_order_app/presentation/splash_screen.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:food_order_app/core/theme/colors/theme_color.dart';
+import 'package:food_order_app/core/theme/text/app_text_theme.dart';
+import 'package:food_order_app/features/grocery/presentation/bloc/grocery_bloc.dart';
+import 'package:food_order_app/router/app_router.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
-
-final GoRouter _goRouter = GoRouter(
-  routes: <RouteBase>[
-    GoRoute(
-      path: '/',
-      builder: (BuildContext context, GoRouterState state) {
-        return const SplashScreen();
-      },
-      routes: <RouteBase>[
-        GoRoute(
-          path: 'register',
-          builder: (BuildContext context, GoRouterState state) {
-            return const RegisterScreen();
-          },
-        ),
-        GoRoute(
-          path: 'login',
-          builder: (BuildContext context, GoRouterState state) {
-            return const LoginScreen();
-          },
-          routes: <RouteBase>[
-            GoRoute(
-              path: 'loginText',
-              builder: (BuildContext context, GoRouterState state) {
-                return const LoginText();
-              },
-            ),
-          ],
-        ),
-      ],
-    ),
-  ],
-);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerConfig: _goRouter,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF86BF3E)),
-        fontFamily: 'Cabin',
-        textTheme: AppTextTheme.textTheme,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          lazy: false,
+          create: (context) => GroceryBloc()..add(GroceryGetData()),
+        ),
+      ],
+      child: GestureDetector(
+        onTap: () {
+          FocusManager.instance.primaryFocus
+              ?.unfocus(); // tắt bàn phím cho toàn bộ màn hình
+        },
+        child: MaterialApp.router(
+          routerConfig: app_router,
+          theme: ThemeData(
+            scaffoldBackgroundColor: ThemeColor.white,
+            textTheme: AppTextTheme.textTheme,
+          ),
+          debugShowCheckedModeBanner: false,
+        ),
       ),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
